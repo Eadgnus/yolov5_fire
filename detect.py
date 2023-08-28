@@ -1,5 +1,8 @@
 # YOLOv5 🚀 by Ultralytics, AGPL-3.0 license
 import random
+
+import pyautogui
+
 """
 Run YOLOv5 detection inference on images, videos, directories, globs, YouTube, webcam, streams, etc.
 
@@ -34,8 +37,37 @@ import os
 import platform
 import sys
 from pathlib import Path
-
+import mouse
 import torch
+
+img1_path = './alarm2.png'  # ★ 알람사진1 경로 설정 ★
+img2_path = './alarm1.png'  # ★ 알람사진2 경로 설정 ★
+
+
+
+def popup_alarm(label, A): # ★ value 값이 confidence score ★
+    condition1 = 0.5  # 1차 임계조건 임시값 0.3
+    condition2 = 0.3  # 2차 임계조건 임시값 0.5
+    if label == 'fire':
+        condition1 = 0.5  # 1차 임계조건 임시값 0.3
+        condition2 = 0.3  # 2차 임계조건 임시값 0.5
+    elif label == 'smoke':
+        condition1 = 0.7 # 1차 임계조건 임시값 0.3
+        condition2 = 0.5  # 2차 임계조건 임시값 0.5
+    # else:
+    #     condition1 = 10.0  # 1차 임계조건 임시값 0.3
+    #     condition2 = 10.0  # 2차 임계조건 임시값 0.5
+
+    if A >= condition1:
+        img1 = cv2.imread(img1_path)
+        img1_resized = cv2.resize(img1, (800, 600))
+        cv2.imshow("Image Alarm", img1_resized)
+        alarm_window_opened = True
+    elif A >= condition2:
+        img2 = cv2.imread(img2_path)
+        img2_resized = cv2.resize(img2, (800, 600))
+        cv2.imshow("Image Alarm", img2_resized)
+        alarm_window_opened = True
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv5 root directory
@@ -66,7 +98,7 @@ def run(
         save_txt=False,  # save results to *.txt
         save_conf=False,  # save confidences in --save-txt labels
         save_crop=False,  # save cropped prediction boxes
-        nosave=False,  # do not save images/videos
+        nosave=True,  # do not save images/videos
         classes=None,  # filter by class: --class 0, or --class 0 2 3
         agnostic_nms=False,  # class-agnostic NMS
         augment=False,  # augmented inference
@@ -152,6 +184,7 @@ def run(
             gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
             imc = im0.copy() if save_crop else im0  # for save_crop
             annotator = Annotator(im0, line_width=line_thickness, example=str(names))
+            label = '예에'
             if len(det):
                 # Rescale boxes from img_size to im0 size
                 det[:, :4] = scale_boxes(im.shape[2:], det[:, :4], im0.shape).round()
@@ -161,7 +194,7 @@ def run(
                     n = (det[:, 5] == c).sum()  # detections per class
                     s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
 
-                # Write results
+                # Write results // 여기의 conf:.2f 부분이 정확도, 불, 알아서 검색, 알람
                 for *xyxy, conf, cls in reversed(det):
                     if save_txt:  # Write to file
                         xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
@@ -172,9 +205,12 @@ def run(
                     if save_img or save_crop or view_img:  # Add bbox to image
                         c = int(cls)  # integer class
                         label = None if hide_labels else (names[c] if hide_conf else f'{names[c]} {conf:.2f}')
+                        popup_alarm(label, conf)
                         annotator.box_label(xyxy, label, color=colors(c, True))
                     if save_crop:
                         save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
+
+
 
             # Stream results
             im0 = annotator.result()
@@ -206,16 +242,16 @@ def run(
                     vid_writer[i].write(im0)
 
         # Print time (inference-only)
-        LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[1].dt * 1E3:.1f}ms")
+        print(f"{s}{'' if len(det) else '(no detections), '}{dt[1].dt * 1E3:.1f}ms")
 
     # Print results
-    t = tuple(x.t / seen * 1E3 for x in dt)  # speeds per image
-    LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape {(1, 3, *imgsz)}' % t)
-    if save_txt or save_img:
-        s = f"\n{len(list(save_dir.glob('labels/*.txt')))} labels saved to {save_dir / 'labels'}" if save_txt else ''
-        LOGGER.info(f"Results saved to {colorstr('bold', save_dir)}{s}")
-    if update:
-        strip_optimizer(weights[0])  # update model (to fix SourceChangeWarning)
+    # t = tuple(x.t / seen * 1E3 for x in dt)  # speeds per image
+    # LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape {(1, 3, *imgsz)}' % t)
+    # if save_txt or save_img:
+    #     s = f"\n{len(list(save_dir.glob('labels/*.txt')))} labels saved to {save_dir / 'labels'}" if save_txt else ''
+    #     LOGGER.info(f"Results saved to {colorstr('bold', save_dir)}{s}")
+    # if update:
+    #     strip_optimizer(weights[0])  # update model (to fix SourceChangeWarning)
 
 
 def parse_opt():
