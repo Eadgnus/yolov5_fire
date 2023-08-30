@@ -1,8 +1,6 @@
 # YOLOv5 🚀 by Ultralytics, AGPL-3.0 license
 import random
 
-import pyautogui
-
 """
 Run YOLOv5 detection inference on images, videos, directories, globs, YouTube, webcam, streams, etc.
 
@@ -37,7 +35,6 @@ import os
 import platform
 import sys
 from pathlib import Path
-import mouse
 import torch
 
 img1_path = './alarm2.png'  # ★ 알람사진1 경로 설정 ★
@@ -46,17 +43,14 @@ img2_path = './alarm1.png'  # ★ 알람사진2 경로 설정 ★
 
 
 def popup_alarm(label, A): # ★ value 값이 confidence score ★
-    condition1 = 0.5  # 1차 임계조건 임시값 0.3
-    condition2 = 0.3  # 2차 임계조건 임시값 0.5
-    if label == 'fire':
-        condition1 = 0.5  # 1차 임계조건 임시값 0.3
-        condition2 = 0.3  # 2차 임계조건 임시값 0.5
-    elif label == 'smoke':
-        condition1 = 0.7 # 1차 임계조건 임시값 0.3
-        condition2 = 0.5  # 2차 임계조건 임시값 0.5
-    # else:
-    #     condition1 = 10.0  # 1차 임계조건 임시값 0.3
-    #     condition2 = 10.0  # 2차 임계조건 임시값 0.5
+    condition1 = 0.7  # 1차 임계조건 임시값 0.3
+    condition2 = 0.5  # 2차 임계조건 임시값 0.5
+    # if label == 'fire':
+    #     condition1 = 0.5  # 1차 임계조건 임시값 0.3
+    #     condition2 = 0.3  # 2차 임계조건 임시값 0.5
+    # elif label == 'smoke':
+    #     condition1 = 0.7 # 1차 임계조건 임시값 0.3
+    #     condition2 = 0.5  # 2차 임계조건 임시값 0.5
 
     if A >= condition1:
         img1 = cv2.imread(img1_path)
